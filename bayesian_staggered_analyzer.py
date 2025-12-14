@@ -36,7 +36,7 @@ BAYES_CHAINS = 2
 # プロット用カラー設定
 COLOR_ACTUAL = '#1f77b4'  # 青 (実績)
 COLOR_CF     = '#d62728'  # 赤 (反実仮想: AIなし)
-COLOR_CI     = '#7f7f7f'  # グレー (信用区間)
+COLOR_HDI    = '#7f7f7f'  # グレー (HDI: 最高密度区間)
 
 class StaggeredApp:
     def __init__(self, root):
@@ -148,11 +148,11 @@ class StaggeredApp:
             # 4. 可視化 (反実仮想プロット)
             self.generate_plots(model, idata, df_panel, save_dir, beta, prob_pos)
             
-            # 完了メッセージ
+            # 完了メッセージ (ここをHDIに修正)
             msg = f"Analysis Complete!\n\n" \
                   f"Estimated AI Effect: +{beta:.2f} points\n" \
                   f"Prob of Improvement: {prob_pos*100:.1f}%\n" \
-                  f"95% Credible Interval: [{hdi_l:.2f}, {hdi_u:.2f}]"
+                  f"95% HDI: [{hdi_l:.2f}, {hdi_u:.2f}]"
             
             messagebox.showinfo("Success", msg)
             self.status_var.set("Analysis Done. Check saved images.")
@@ -195,7 +195,9 @@ class StaggeredApp:
             
             # 反実仮想 (Counterfactual)
             ax.plot(df_sub['Month'], df_sub['CF_Mean'], '--', color=COLOR_CF, label='Counterfactual (No AI)')
-            ax.fill_between(df_sub['Month'], df_sub['CF_Low'], df_sub['CF_High'], color=COLOR_CI, alpha=0.2, label='95% Credible Interval')
+            
+            # 塗りつぶし (ここをHDIに修正)
+            ax.fill_between(df_sub['Month'], df_sub['CF_Low'], df_sub['CF_High'], color=COLOR_HDI, alpha=0.2, label='95% HDI')
             
             # 介入開始線の描画
             intervention_start = df_sub[df_sub['Intervention_On'] == 1]['Month'].min()
